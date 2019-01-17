@@ -1,0 +1,77 @@
+document.createIframe = function(type, content,idname,width=undefined, sandbox=false) { //Sandbox=[true, true, true, true, true, true]
+    let unsuported = '<span class="error">Twoja przeglądarka nie obsługuje elementów iframe</span>';
+    let newiframe = document.createElement('iframe');
+    iframe.innerHTML = unsuported;
+    
+    if(idname) newiframe.id = idname;
+    
+    //Iframe config
+    if(width) newiframe.width = width;
+    
+    if(Array.isArray(sandbox)) {
+        let config = "";
+        
+        if(typeof sandbox[0]!="undefined" && sandbox[0]) config += "allow-froms ";
+        if(typeof sandbox[1]!="undefined" && sandbox[1]) config += "allow-pointer-lock ";
+        if(typeof sandbox[2]!="undefined" && sandbox[2]) config += "allow-popups ";
+        if(typeof sandbox[3]!="undefined" && sandbox[3]) config += "allow-same-origin ";
+        if(typeof sandbox[4]!="undefined" && sandbox[4]) config += "allow-scripts ";
+        if(typeof sandbox[5]!="undefined" && sandbox[5]) config += "allow-top-navigation";
+        
+        newiframe.setAttribute("sandbox", config); }
+    //End Iframe config
+    
+    
+    switch(type) {
+        case "src":
+            newiframe.src = content;
+        break;
+        case "srcdoc":
+            var attibutesArr = content.match(/<\w+((\s+\w+(\s*=\s*(?:".*?"|'.*?'|[\^'">\s]+))?)+\s*|\s*)\/?>/g);
+	        var attributesGetted = new Array();
+            
+            
+        break;
+        case "innerScript":
+            let wrapper = '<script type="text/javascript">document.getElementById(\''+idname+'\').srcdoc = \''+content+'\';</script>';
+            
+        break;
+    }
+    
+    document.body.appendChild(newiframe);
+    if(wrapper) document.body.appendHTML(wrapper);
+}
+
+/*HTMLIFrameElement.prototype.window = function() {
+    return this.contentWindow || this.;
+}*/
+
+HTMLIFrameElement.prototype.addEventListener = function(method, callback, capture=false) {
+    
+    switch(method) {
+        case "load":
+            var iframeHTML = this.contentWindow.document || this.contentDocument;
+            let iframeEl = this;
+            
+            function iframeReady() {
+              console.log('iframe '+iframeEl.id+' is ready');
+                iframeEl.contentDocument.removeEventListener('DOMContentLoaded', iframeReady);
+                iframeEl.contentWindow.removeEventListener('load', iframeReady);
+                iframeEl.removeEventListener('load', iframeReady);
+                 callback();
+              }
+
+          if (iframeEl.contentDocument.readyState === "interactive" || iframeEl.contentDocument.readyState === "complete") {
+               iframeReady();
+          } else {
+           iframeEl.contentDocument.addEventListener('DOMContentLoaded', iframeReady);
+            iframeEl.contentWindow.addEventListener('load', iframeReady);
+           iframeEl.addEventListener('load', iframeReady);
+           }
+        
+        break;
+    }
+
+}
+
+HTMLIFrameElement.prototype.DOM = function() {return this.contentWindow.document || this.contentDocument}
